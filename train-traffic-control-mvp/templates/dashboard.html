@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Traffic Control System - MVP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button.danger {
+            background: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background: #c0392b;
+        }
+        
+        button.success {
+            background: #27ae60;
+        }
+        
+        button.success:hover {
+            background: #229954;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .network-viz {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        #network-canvas {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ecf0f1;
+            border-radius: 5px;
+            position: relative;
+            overflow-x: auto;
+            background: #f8f9fa;
+        }
+        
+        .station-node {
+            position: absolute;
+            width: 80px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .station-node.has-loop {
+            background: #27ae60;
+        }
+        
+        .track-line {
+            position: absolute;
+            height: 2px;
+            background: #95a5a6;
+            top: 20px;
+        }
+        
+        .track-line.double {
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #34495e,
+                #34495e 10px,
+                #95a5a6 10px,
+                #95a5a6 20px
+            );
+        }
+        
+        .train-marker {
+            position: absolute;
+            width: 30px;
+            height: 15px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.5s ease;
+        }
+        
+        .train-marker.express {
+            background: #e74c3c;
+        }
+        
+        .train-marker.passenger {
+            background: #f39c12;
+        }
+        
+        .train-marker.freight {
+            background: #95a5a6;
+        }
+        
+        .train-marker.local {
+            background: #9b59b6;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .info-table th,
+        .info-table td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .info-table th {
+            background: #ecf0f1;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-badge.running {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.delayed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-badge.scheduled {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .recommendations {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .recommendations li {
+            padding: 5px 0;
+            color: #2c3e50;
+        }
+        
+        .recommendations li:before {
+            content: "→ ";
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .metrics {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .alert {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚂 Train Traffic Control System</h1>
+            <p>AI-Powered Railway Network Optimization - MVP</p>
+        </div>
+        
+        <div class="controls">
+            <div class="button-group">
+                <button onclick="fetchNetworkStatus()">🔄 Refresh Status</button>
+                <button class="success" onclick="runOptimization()">🎯 Optimize Schedule</button>
+                <button onclick="runSimulation()">▶️ Run Simulation</button>
+                <button class="danger" onclick="simulateDisruption()">⚠️ Simulate Disruption</button>
+                <button onclick="resetSystem()">🔧 Reset System</button>
+            </div>
+        </div>
+        
+        <div id="alerts"></div>
+        
+        <div class="network-viz">
+            <h2>Railway Network Visualization</h2>
+            <div id="network-canvas"></div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Network Status</h2>
+                <div id="network-info" class="loading">Loading network information...</div>
+            </div>
+            
+            <div class="card">
+                <h2>Active Trains</h2>
+                <div id="trains-info" class="loading">Loading trains information...</div>
+            </div>
+            
+            <div class="card">
+                <h2>Optimization Results</h2>
+                <div id="optimization-results">
+                    <p style="color: #7f8c8d;">Run optimization to see results</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>System Metrics</h2>
+                <div id="metrics" class="metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="throughput">-</div>
+                        <div class="metric-label">Trains/Hour</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="avg-delay">-</div>
+                        <div class="metric-label">Avg Delay (min)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="conflicts">-</div>
+                        <div class="metric-label">Conflicts Resolved</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let networkData = null;
+        
+        async function fetchNetworkStatus() {
+            try {
+                showAlert('Fetching network status...', 'success');
+                const response = await fetch('/api/network/status');
+                networkData = await response.json();
+                updateNetworkInfo();
+                updateTrainsInfo();
+                visualizeNetwork();
+                clearAlerts();
+            } catch (error) {
+                showAlert('Error fetching network status: ' + error.message, 'error');
+            }
+        }
+        
+        function updateNetworkInfo() {
+            if (!networkData) return;
+            
+            const container = document.getElementById('network-info');
+            const singleTrackCount = networkData.sections.filter(s => s.track_type === 'SINGLE').length;
+            const doubleTrackCount = networkData.sections.filter(s => s.track_type === 'DOUBLE').length;
+            
+            container.innerHTML = `
+                <table class="info-table">
+                    <tr>
+                        <th>Stations</th>
+                        <td>${networkData.stations.length}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Sections</th>
+                        <td>${networkData.sections.length}</td>
+                    </tr>
+                    <tr>
+                        <th>Single Track</th>
+                        <td>${singleTrackCount}</td>
+                    </tr>
+                    <tr>
+                        <th>Double Track</th>
+                        <td>${doubleTrackCount}</td>
+                    </tr>
+                    <tr>
+                        <th>Loop Lines</th>
+                        <td>${networkData.stations.filter(s => s.has_loop).length}</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function updateTrainsInfo() {
+            if (!networkData) return;
+            
+            const container = document.getElementById('trains-info');
+            const trains = networkData.trains.slice(0, 5);  // Show first 5 trains
+            
+            let html = '<table class="info-table">';
+            html += '<thead><tr><th>Train</th><th>Type</th><th>Delay</th></tr></thead>';
+            html += '<tbody>';
+            
+            trains.forEach(train => {
+                const statusClass = train.delay > 0 ? 'delayed' : 'scheduled';
+                html += `
+                    <tr>
+                        <td>${train.name}</td>
+                        <td><span class="status-badge ${statusClass}">${train.type}</span></td>
+                        <td>${train.delay.toFixed(0)} min</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            
+            if (networkData.trains.length > 5) {
+                html += `<p style="margin-top: 10px; color: #7f8c8d;">And ${networkData.trains.length - 5} more trains...</p>`;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function visualizeNetwork() {
+            if (!networkData) return;
+            
+            const canvas = document.getElementById('network-canvas');
+            canvas.innerHTML = '';
+            
+            // Draw track lines
+            networkData.sections.forEach((section, index) => {
+                if (section.id.includes('R')) return;  // Skip reverse sections
+                
+                const fromStation = networkData.stations.find(s => s.name === section.from);
+                const toStation = networkData.stations.find(s => s.name === section.to);
+                
+                if (fromStation && toStation) {
+                    const line = document.createElement('div');
+                    line.className = `track-line ${section.track_type.toLowerCase()}`;
+                    line.style.left = `${100 + fromStation.position_km * 5}px`;
+                    line.style.width = `${(toStation.position_km - fromStation.position_km) * 5}px`;
+                    
+                    if (section.is_blocked) {
+                        line.style.background = '#e74c3c';
+                    }
+                    
+                    canvas.appendChild(line);
+                }
+            });
+            
+            // Draw stations
+            networkData.stations.forEach(station => {
+                const node = document.createElement('div');
+                node.className = `station-node ${station.has_loop ? 'has-loop' : ''}`;
+                node.style.left = `${60 + station.position_km * 5}px`;
+                node.style.top = '0px';
+                node.innerHTML = station.name.split(' ')[0];
+                node.title = `${station.name} (${station.platforms} platforms)`;
+                
+                node.onclick = () => optimizeCrossing(station.id);
+                
+                canvas.appendChild(node);
+            });
+            
+            // Draw trains
+            networkData.trains.slice(0, 5).forEach((train, index) => {
+                const marker = document.createElement('div');
+                marker.className = `train-marker ${train.type.toLowerCase().split('_')[0]}`;
+                marker.style.left = `${75 + (train.position || 0) * 5}px`;
+                marker.style.top = `${50 + index * 20}px`;
+                marker.innerHTML = train.id.substring(3);
+                marker.title = train.name;
+                
+                canvas.appendChild(marker);
+            });
+        }
+        
+        async function runOptimization() {
+            try {
+                showAlert('Running optimization algorithm...', 'success');
+                const response = await fetch('/api/optimize', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                const result = await response.json();
+                
+                displayOptimizationResults(result);
+                updateMetrics(result);
+                clearAlerts();
+            } catch (error) {
+                showAlert('Error running optimization: ' + error.message, 'error');
+            }
+        }
+        
+        function displayOptimizationResults(result) {
+            const container = document.getElementById('optimization-results');
+            
+            let html = '<div class="recommendations">';
+            html += '<strong>Recommendations:</strong>';
+            html += '<ul>';
+            
+            result.recommendations.forEach(rec => {
+                html += `<li>${rec}</li>`;
+            });
+            
+            html += '</ul>';
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        function updateMetrics(result) {
+            document.getElementById('throughput').textContent = result.throughput.toFixed(1);
+            document.getElementById('avg-delay').textContent = result.average_delay.toFixed(0);
+            document.getElementById('conflicts').textContent = result.conflicts_resolved;
+        }
+        
+        async function runSimulation() {
+            try {
+                showAlert('Running 4-hour simulation...', 'success');
+                const response = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({duration_hours: 4})
+                });
+                const result = await response.json();
+                
+                // Display simulation results
+                displayOptimizationResults(result.optimization);
+                updateMetrics(result.optimization);
+                
+                // Show completion stats
+                const stats = result.final_statistics;
+                showAlert(
+                    `Simulation complete! ${stats.completed_trains} trains completed (${stats.completion_rate.toFixed(0)}%), ` +
+                    `Average delay: ${stats.average_delay_minutes.toFixed(0)} minutes`,
+                    'success'
+                );
+            } catch (error) {
+                showAlert('Error running simulation: ' + error.message, 'error');
+            }
+        }
+        
+        async function simulateDisruption() {
+            const sectionId = prompt('Enter section ID to disrupt (e.g., SEC01):');
+            if (!sectionId) return;
+            
+            try {
+                showAlert(`Simulating disruption in section ${sectionId}...`, 'success');
+                const response = await fetch('/api/disruption', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({section_id: sectionId})
+                });
+                const result = await response.json();
+                
+                if (result.error) {
+                    showAlert(result.error, 'error');
+                } else {
+                    displayOptimizationResults(result.optimization_result);
+                    showAlert(
+                        `Disruption handled! ${result.affected_trains} trains affected.`,
+                        'success'
+                    );
+                    fetchNetworkStatus();  // Refresh to show blocked section
+                }
+            } catch (error) {
+                showAlert('Error simulating disruption: ' + error.message, 'error');
+            }
+        }
+        
+        async function optimizeCrossing(stationId) {
+            try {
+                const response = await fetch(`/api/crossing/${stationId}`);
+                const result = await response.json();
+                
+                let message = `Station ${result.station}: `;
+                if (result.action === 'NO_CROSSING_NEEDED') {
+                    message += 'No crossing optimization needed';
+                } else if (result.action === 'CROSSING_AT_LOOP') {
+                    message += `${result.through_train} will pass through, ${result.waiting_trains.join(', ')} will wait`;
+                } else {
+                    message += `Sequential passage order: ${result.order.join(' → ')}`;
+                }
+                
+                showAlert(message, 'success');
+            } catch (error) {
+                showAlert('Error optimizing crossing: ' + error.message, 'error');
+            }
+        }
+        
+        async function resetSystem() {
+            if (!confirm('Are you sure you want to reset the system?')) return;
+            
+            try {
+                showAlert('Resetting system...', 'success');
+                const response = await fetch('/api/reset', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                showAlert(result.message, 'success');
+                fetchNetworkStatus();
+                
+                // Clear optimization results
+                document.getElementById('optimization-results').innerHTML = 
+                    '<p style="color: #7f8c8d;">Run optimization to see results</p>';
+                
+                // Reset metrics
+                document.getElementById('throughput').textContent = '-';
+                document.getElementById('avg-delay').textContent = '-';
+                document.getElementById('conflicts').textContent = '-';
+            } catch (error) {
+                showAlert('Error resetting system: ' + error.message, 'error');
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            alertsContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        
+        function clearAlerts() {
+            document.getElementById('alerts').innerHTML = '';
+        }
+        
+        // Initialize on page load
+        window.onload = () => {
+            fetchNetworkStatus();
+        };
+        
+        // Auto-refresh every 30 seconds
+        setInterval(fetchNetworkStatus, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Analytics Center - Live Railway Traffic Control</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+        
+        .header { 
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
+            color: white; 
+            padding: 1rem 2rem; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .nav-tabs { 
+            background: #0f172a; 
+            display: flex; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-tab { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            padding: 1rem 1.5rem; 
+            color: #94a3b8; 
+            text-decoration: none; 
+            font-size: 0.875rem; 
+            border-bottom: 3px solid transparent; 
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tab:hover { 
+            color: white; 
+            background: rgba(0,166,184,0.1); 
+        }
+        
+        .nav-tab.active { 
+            color: #00a6b8; 
+            background: rgba(0,166,184,0.15); 
+            border-bottom-color: #00a6b8; 
+        }
+        
+        .main-content { 
+            max-width: 1920px; 
+            margin: 2rem auto; 
+            padding: 0 2rem; 
+        }
+        
+        /* Enhanced KPI Styles */
+        .kpi-section {
+            margin-bottom: 2rem;
+        }
+        
+        .kpi-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+        }
+        
+        .kpi-card.clickable {
+            border: 2px solid transparent;
+        }
+        
+        .kpi-card.clickable:hover {
+            border-color: #fff;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .kpi-card:hover::before {
+            left: 100%;
+        }
+        
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .kpi-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .kpi-trend {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .kpi-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        /* Specific KPI Colors */
+        .kpi-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .kpi-success { background: linear-gradient(135deg, #48cc6c 0%, #2eac4e 100%); }
+        .kpi-warning { background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); }
+        .kpi-danger { background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); }
+        .kpi-info { background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%); }
+        .kpi-purple { background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); }
+        
+        /* Trend indicators */
+        .trend-up { color: #4CAF50; }
+        .trend-down { color: #f44336; }
+        .trend-stable { color: #ffeb3b; }
+        
+        /* Interactive Charts */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-chart {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-chart:hover {
+            background: #f8fafc;
+            border-color: #00a6b8;
+        }
+        
+        .btn-chart.active {
+            background: #00a6b8;
+            color: white;
+            border-color: #00a6b8;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .action-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .action-btn.secondary {
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        /* Data Tables */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+        
+        .data-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .data-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.875rem;
+        }
+        
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge.operational { background: #dcfce7; color: #166534; }
+        .badge.delayed { background: #fee2e2; color: #991b1b; }
+        .badge.high { background: #fef3c7; color: #92400e; }
+        .badge.medium { background: #dbeafe; color: #1e40af; }
+        .badge.low { background: #f3e8ff; color: #7c3aed; }
+        
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #00a6b8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        /* Auto-refresh indicator */
+        .refresh-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auto-refresh indicator -->
+    <div class="refresh-indicator" id="refreshIndicator">
+        <i class="fas fa-sync-alt"></i> Live Updates Active
+    </div>
+
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; background: #00a6b8; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">Enhanced Analytics Center</div>
+                    <div style="font-size: 0.875rem; opacity: 0.8;">Live Railway Traffic Control with Comprehensive KPIs</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 0.875rem; opacity: 0.8;" id="lastUpdate">Last updated: Loading...</div>
+            </div>
+        </div>
+    </header>
+    
+    <nav class="nav-tabs">
+        <a href="/" class="nav-tab"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+        <a href="/train-records" class="nav-tab"><i class="fas fa-train"></i><span>Train Records</span></a>
+        <a href="/section-control" class="nav-tab"><i class="fas fa-route"></i><span>Section Control</span></a>
+        <a href="/ai-engine" class="nav-tab"><i class="fas fa-brain"></i><span>AI Engine</span></a>
+        <a href="/analytics" class="nav-tab active"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+    </nav>
+    
+    <main class="main-content">
+        <!-- Summary KPIs -->
+        <section class="kpi-section">
+            <h2><i class="fas fa-tachometer-alt"></i> Summary Performance Indicators</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-primary clickable" onclick="showKPIDetails('punctuality')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Punctuality Rate</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +2.3%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-punctuality">-</div>
+                    <div class="kpi-subtitle">On-time arrival performance</div>
+                </div>
+                
+                <div class="kpi-card kpi-success clickable" onclick="showKPIDetails('efficiency')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">System Efficiency</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +1.8%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-efficiency">-</div>
+                    <div class="kpi-subtitle">Overall system performance</div>
+                </div>
+                
+                <div class="kpi-card kpi-warning clickable" onclick="showKPIDetails('delay')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Average Delay</div>
+                        <div class="kpi-trend trend-stable"><i class="fas fa-minus"></i> Stable</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-avg-delay">-</div>
+                    <div class="kpi-subtitle">Minutes per train</div>
+                </div>
+                
+                <div class="kpi-card kpi-info clickable" onclick="showKPIDetails('utilization')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Platform Utilization</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +3.1%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-utilization">-</div>
+                    <div class="kpi-subtitle">Platform capacity usage</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Operational KPIs -->
+        <section class="kpi-section">
+            <h2><i class="fas fa-cogs"></i> Operational Metrics</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-primary clickable" onclick="showKPIDetails('throughput')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Trains Per Hour</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +5.2%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-throughput">-</div>
+                    <div class="kpi-subtitle">Current throughput</div>
+                </div>
+                
+                <div class="kpi-card kpi-danger clickable" onclick="showKPIDetails('conflicts')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Active Conflicts</div>
+                        <div class="kpi-trend trend-down"><i class="fas fa-arrow-down"></i> -12.5%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-conflicts">-</div>
+                    <div class="kpi-subtitle">Requiring attention</div>
+                </div>
+                
+                <div class="kpi-card kpi-success clickable" onclick="showKPIDetails('satisfaction')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Passenger Satisfaction</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +1.4%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-satisfaction">-</div>
+                    <div class="kpi-subtitle">Customer experience score</div>
+                </div>
+                
+                <div class="kpi-card kpi-purple clickable" onclick="showKPIDetails('capacity')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Peak Hour Capacity</div>
+                        <div class="kpi-trend trend-stable"><i class="fas fa-minus"></i> Optimal</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-peak-capacity">-</div>
+                    <div class="kpi-subtitle">Maximum trains handled</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Financial KPIs -->
+        <section class="kpi-section">
+            <h2><i class="fas fa-rupee-sign"></i> Financial Performance</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card kpi-danger clickable" onclick="showKPIDetails('cost')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Daily Delay Cost</div>
+                        <div class="kpi-trend trend-down"><i class="fas fa-arrow-down"></i> -8.3%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-delay-cost">-</div>
+                    <div class="kpi-subtitle">INR - operational impact</div>
+                </div>
+                
+                <div class="kpi-card kpi-success clickable" onclick="showKPIDetails('savings')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Efficiency Savings</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +15.2%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-savings">₹45,000</div>
+                    <div class="kpi-subtitle">Daily operational savings</div>
+                </div>
+                
+                <div class="kpi-card kpi-warning clickable" onclick="showKPIDetails('compensation')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Compensation Liability</div>
+                        <div class="kpi-trend trend-stable"><i class="fas fa-minus"></i> Stable</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-compensation">-</div>
+                    <div class="kpi-subtitle">Passenger compensation</div>
+                </div>
+                
+                <div class="kpi-card kpi-info clickable" onclick="showKPIDetails('resource')">
+                    <div class="kpi-header">
+                        <div class="kpi-label">Resource Utilization</div>
+                        <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +4.7%</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-resource">₹1,27,500</div>
+                    <div class="kpi-subtitle">Asset utilization value</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Action Buttons -->
+        <section class="action-buttons">
+            <button class="action-btn primary" onclick="refreshAnalytics()">
+                <i class="fas fa-sync-alt"></i> Refresh Analytics
+            </button>
+            <button class="action-btn primary" onclick="runOptimization()">
+                <i class="fas fa-brain"></i> Run AI Optimization
+            </button>
+            <button class="action-btn secondary" onclick="exportReport()">
+                <i class="fas fa-file-export"></i> Export Report
+            </button>
+            <button class="action-btn secondary" onclick="showHistoricalData()">
+                <i class="fas fa-history"></i> Historical Trends
+            </button>
+            <button class="action-btn secondary" onclick="scheduleReoptimization()">
+                <i class="fas fa-calendar-alt"></i> Schedule Reoptimization
+            </button>
+            <button class="action-btn secondary" onclick="conflictDetection()">
+                <i class="fas fa-exclamation-triangle"></i> Conflict Detection
+            </button>
+        </section>
+        
+        <!-- Interactive Charts -->
+        <section class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fas fa-chart-line"></i> Performance Timeline</div>
+                    <div class="chart-controls">
+                        <button class="btn-chart active" onclick="changeTimeRange('24h')">24H</button>
+                        <button class="btn-chart" onclick="changeTimeRange('7d')">7D</button>
+                        <button class="btn-chart" onclick="changeTimeRange('30d')">30D</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fas fa-chart-pie"></i> Train Type Distribution</div>
+                    <div class="chart-controls">
+                        <button class="btn-chart active" onclick="updateDistribution('type')">By Type</button>
+                        <button class="btn-chart" onclick="updateDistribution('status')">By Status</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fas fa-chart-bar"></i> Platform Utilization</div>
+                    <div class="chart-controls">
+                        <button class="btn-chart active" onclick="updatePlatforms('current')">Current</button>
+                        <button class="btn-chart" onclick="updatePlatforms('average')">Average</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="platformChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fas fa-chart-area"></i> Traffic Density</div>
+                    <div class="chart-controls">
+                        <button class="btn-chart active" onclick="updateTraffic('hourly')">Hourly</button>
+                        <button class="btn-chart" onclick="updateTraffic('daily')">Daily</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Data Tables -->
+        <section class="data-grid">
+            <div class="data-card">
+                <div class="data-header">
+                    <span><i class="fas fa-train"></i> Current Train Status</span>
+                    <button class="btn-chart" onclick="refreshTrainData()">Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Name</th>
+                            <th>Platform</th>
+                            <th>Status</th>
+                            <th>Delay</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trains-tbody">
+                        <tr><td colspan="5" style="text-align:center; padding: 2rem;"><div class="loading"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="data-card">
+                <div class="data-header">
+                    <span><i class="fas fa-exclamation-triangle"></i> Active Conflicts</span>
+                    <button class="btn-chart" onclick="refreshConflictData()">Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Platform/Section</th>
+                            <th>Severity</th>
+                            <th>Affected Trains</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="conflicts-tbody">
+                        <tr><td colspan="5" style="text-align:center; padding: 2rem;"><div class="loading"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="data-card">
+                <div class="data-header">
+                    <span><i class="fas fa-route"></i> Platform Status</span>
+                    <button class="btn-chart" onclick="refreshPlatformData()">Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Platform</th>
+                            <th>Status</th>
+                            <th>Current Train</th>
+                            <th>Utilization</th>
+                            <th>Next Available</th>
+                        </tr>
+                    </thead>
+                    <tbody id="platforms-tbody">
+                        <tr><td colspan="5" style="text-align:center; padding: 2rem;"><div class="loading"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="data-card">
+                <div class="data-header">
+                    <span><i class="fas fa-brain"></i> ML Predictions</span>
+                    <button class="btn-chart" onclick="refreshMLPredictions()">Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Train</th>
+                            <th>Predicted Delay</th>
+                            <th>Current Delay</th>
+                            <th>Risk Level</th>
+                            <th>Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ml-predictions-tbody">
+                        <tr><td colspan="5" style="text-align:center; padding: 2rem;"><div class="loading"></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- KPI Details Modal -->
+    <div id="kpiModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let charts = {};
+        let analyticsData = null;
+        let autoRefreshInterval = null;
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadAnalyticsData();
+            startAutoRefresh();
+        });
+        
+        // Auto-refresh functionality
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                loadAnalyticsData();
+                updateRefreshIndicator();
+            }, 30000); // 30 seconds
+        }
+        
+        function updateRefreshIndicator() {
+            const indicator = document.getElementById('refreshIndicator');
+            indicator.style.animation = 'none';
+            setTimeout(() => {
+                indicator.style.animation = 'pulse 1s ease-in-out';
+            }, 10);
+        }
+        
+        // Load comprehensive analytics data
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('/api/comprehensive-analytics');
+                analyticsData = await response.json();
+                updateAllKPIs();
+                updateAllCharts();
+                updateAllTables();
+                updateLastUpdateTime();
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+        
+        // Update all KPIs
+        function updateAllKPIs() {
+            if (!analyticsData) return;
+            
+            const summary = analyticsData.summary_kpis || {};
+            const operational = analyticsData.operational_kpis || {};
+            const financial = analyticsData.financial_kpis || {};
+            
+            // Summary KPIs
+            document.getElementById('kpi-punctuality').textContent = `${summary.punctuality_rate || 0}%`;
+            document.getElementById('kpi-efficiency').textContent = `${summary.system_efficiency || 0}%`;
+            document.getElementById('kpi-avg-delay').textContent = `${summary.average_delay || 0} min`;
+            document.getElementById('kpi-utilization').textContent = `${summary.platform_utilization || 0}%`;
+            
+            // Operational KPIs
+            document.getElementById('kpi-throughput').textContent = `${operational.trains_per_hour || 0}`;
+            document.getElementById('kpi-conflicts').textContent = `${analyticsData.summary_kpis?.conflicts_active || 0}`;
+            document.getElementById('kpi-satisfaction').textContent = `${summary.passenger_satisfaction || 0}%`;
+            document.getElementById('kpi-peak-capacity').textContent = `${operational.peak_hour_capacity || 0}`;
+            
+            // Financial KPIs
+            const delayCost = financial.estimated_delay_cost_inr || 0;
+            document.getElementById('kpi-delay-cost').textContent = `₹${(delayCost/1000).toFixed(1)}K`;
+            
+            const compensation = financial.passenger_compensation_liability || 0;
+            document.getElementById('kpi-compensation').textContent = `₹${(compensation/1000).toFixed(1)}K`;
+        }
+        
+        // Initialize all charts
+        function initializeCharts() {
+            // Performance Timeline Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            charts.performance = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [{
+                        label: 'Efficiency %',
+                        data: [85, 78, 92, 88, 95, 89],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+            
+            // Distribution Chart
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            charts.distribution = new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Express', 'Superfast', 'Mail', 'Passenger', 'Others'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: ['#667eea', '#764ba2', '#48cc6c', '#ffc107', '#f44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Platform Utilization Chart
+            const platformCtx = document.getElementById('platformChart').getContext('2d');
+            charts.platform = new Chart(platformCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9'],
+                    datasets: [{
+                        label: 'Utilization %',
+                        data: [85, 92, 78, 88, 95, 73, 82, 89, 91],
+                        backgroundColor: '#00a6b8'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+            
+            // Traffic Density Chart
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            charts.traffic = new Chart(trafficCtx, {
+                type: 'area',
+                data: {
+                    labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                    datasets: [{
+                        label: 'Train Count',
+                        data: [12, 28, 15, 18, 32, 14],
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        // Update all charts with live data
+        function updateAllCharts() {
+            if (!analyticsData || !analyticsData.detailed_analytics) return;
+            
+            const analytics = analyticsData.detailed_analytics;
+            
+            // Update platform chart
+            if (analytics.platform_analytics && charts.platform) {
+                const labels = analytics.platform_analytics.map(p => `P${p.platform}`);
+                const data = analytics.platform_analytics.map(p => Math.min(p.trains * 4.5, 100));
+                
+                charts.platform.data.labels = labels;
+                charts.platform.data.datasets[0].data = data;
+                charts.platform.update();
+            }
+            
+            // Update traffic chart
+            if (analytics.hourly_traffic && charts.traffic) {
+                const labels = analytics.hourly_traffic.map(h => `${h.hour.toString().padStart(2, '0')}:00`);
+                const data = analytics.hourly_traffic.map(h => h.trains);
+                
+                charts.traffic.data.labels = labels;
+                charts.traffic.data.datasets[0].data = data;
+                charts.traffic.update();
+            }
+        }
+        
+        // Update all data tables
+        async function updateAllTables() {
+            await Promise.all([
+                updateTrainTable(),
+                updateConflictTable(),
+                updatePlatformTable(),
+                updateMLPredictionsTable()
+            ]);
+        }
+        
+        // Update train status table
+        async function updateTrainTable() {
+            try {
+                const response = await fetch('/api/live-network-status');
+                const data = await response.json();
+                const tbody = document.getElementById('trains-tbody');
+                
+                tbody.innerHTML = '';
+                const trains = [...(data.current_trains?.scheduled || []), ...(data.current_trains?.delayed || []), ...(data.current_trains?.at_platform || [])];
+                
+                trains.slice(0, 10).forEach(train => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${train.train_number}</td>
+                        <td>${train.train_name}</td>
+                        <td>Platform ${train.platform_number}</td>
+                        <td><span class="badge ${train.current_status.toLowerCase().replace(' ', '-')}">${train.current_status}</span></td>
+                        <td>${train.delay_minutes} min</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error updating train table:', error);
+            }
+        }
+        
+        // Update conflicts table
+        async function updateConflictTable() {
+            try {
+                const response = await fetch('/api/conflict-detection');
+                const data = await response.json();
+                const tbody = document.getElementById('conflicts-tbody');
+                
+                tbody.innerHTML = '';
+                (data.detailed_conflicts || []).forEach(conflict => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${conflict.type}</td>
+                        <td>Platform ${conflict.platform}</td>
+                        <td><span class="badge ${conflict.severity.toLowerCase()}">${conflict.severity}</span></td>
+                        <td>${conflict.affected_trains?.length || 0} trains</td>
+                        <td><button class="btn-chart" onclick="resolveConflict('${conflict.type}')">Resolve</button></td>
+                    `;
+                });
+                
+                if ((data.detailed_conflicts || []).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #64748b; padding: 2rem;">No active conflicts</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error updating conflicts table:', error);
+            }
+        }
+        
+        // Update platform status table
+        async function updatePlatformTable() {
+            try {
+                const response = await fetch('/api/platform-management');
+                const data = await response.json();
+                const tbody = document.getElementById('platforms-tbody');
+                
+                tbody.innerHTML = '';
+                (data.platforms || []).forEach(platform => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>Platform ${platform.platform_number}</td>
+                        <td><span class="badge ${platform.current_status.toLowerCase()}">${platform.current_status}</span></td>
+                        <td>${platform.current_train_name || 'Available'}</td>
+                        <td>${platform.utilization_percentage.toFixed(1)}%</td>
+                        <td>${new Date(platform.next_available_slot).toLocaleTimeString()}</td>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error updating platform table:', error);
+            }
+        }
+        
+        // Update ML predictions table
+        async function updateMLPredictionsTable() {
+            try {
+                const response = await fetch('/api/ml-predictions');
+                const data = await response.json();
+                const tbody = document.getElementById('ml-predictions-tbody');
+                
+                tbody.innerHTML = '';
+                Object.entries(data.predictions || {}).forEach(([trainNum, prediction]) => {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${trainNum}</td>
+                        <td>${prediction.predicted_delay_minutes} min</td>
+                        <td>${prediction.current_delay} min</td>
+                        <td><span class="badge ${prediction.risk_level.toLowerCase()}">${prediction.risk_level}</span></td>
+                        <td>${(prediction.confidence * 100).toFixed(1)}%</td>
+                    `;
+                });
+                
+                if (Object.keys(data.predictions || {}).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #64748b; padding: 2rem;">No predictions available</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error updating ML predictions table:', error);
+            }
+        }
+        
+        // Interactive functions
+        function showKPIDetails(kpiType) {
+            const modal = document.getElementById('kpiModal');
+            const content = document.getElementById('modalContent');
+            
+            const kpiDetails = {
+                punctuality: {
+                    title: 'Punctuality Rate Details',
+                    content: `
+                        <h3>Punctuality Performance</h3>
+                        <p>Current rate: <strong>${document.getElementById('kpi-punctuality').textContent}</strong></p>
+                        <p>Trend: <strong>Improving (+2.3%)</strong></p>
+                        <h4>Breakdown:</h4>
+                        <ul>
+                            <li>On-time arrivals: 78%</li>
+                            <li>Minor delays (< 5 min): 15%</li>
+                            <li>Major delays (> 15 min): 7%</li>
+                        </ul>
+                    `
+                },
+                efficiency: {
+                    title: 'System Efficiency Details',
+                    content: `
+                        <h3>System Performance Metrics</h3>
+                        <p>Current efficiency: <strong>${document.getElementById('kpi-efficiency').textContent}</strong></p>
+                        <p>Factors contributing to efficiency:</p>
+                        <ul>
+                            <li>Optimal platform utilization</li>
+                            <li>Effective conflict resolution</li>
+                            <li>AI-powered scheduling</li>
+                        </ul>
+                    `
+                }
+                // Add more KPI details as needed
+            };
+            
+            content.innerHTML = kpiDetails[kpiType]?.content || '<p>Details not available</p>';
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('kpiModal').style.display = 'none';
+        }
+        
+        // Action button functions
+        async function refreshAnalytics() {
+            const button = event.target;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            button.disabled = true;
+            
+            await loadAnalyticsData();
+            
+            button.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Analytics';
+            button.disabled = false;
+        }
+        
+        async function runOptimization() {
+            const button = event.target;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Optimizing...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/dynamic-optimize', { method: 'POST' });
+                const result = await response.json();
+                alert(`Optimization completed! Throughput improvement: ${result.throughput_improvement}%, Conflicts resolved: ${result.conflicts_resolved}`);
+            } catch (error) {
+                alert('Optimization failed: ' + error.message);
+            }
+            
+            button.innerHTML = '<i class="fas fa-brain"></i> Run AI Optimization';
+            button.disabled = false;
+        }
+        
+        async function scheduleReoptimization() {
+            const button = event.target;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scheduling...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/schedule-reoptimize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'full', reason: 'Manual schedule reoptimization' })
+                });
+                const result = await response.json();
+                alert(`Reoptimization scheduled! ID: ${result.reoptimization_id}, Next recommended: ${new Date(result.next_reoptimization_recommended).toLocaleString()}`);
+            } catch (error) {
+                alert('Reoptimization scheduling failed: ' + error.message);
+            }
+            
+            button.innerHTML = '<i class="fas fa-calendar-alt"></i> Schedule Reoptimization';
+            button.disabled = false;
+        }
+        
+        async function conflictDetection() {
+            const button = event.target;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch('/api/conflict-detection');
+                const result = await response.json();
+                alert(`Conflict detection completed! Found ${result.total_conflicts} conflicts. High severity: ${result.conflicts_by_severity.high}`);
+                await updateConflictTable();
+            } catch (error) {
+                alert('Conflict detection failed: ' + error.message);
+            }
+            
+            button.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Conflict Detection';
+            button.disabled = false;
+        }
+        
+        function exportReport() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                analytics: analyticsData,
+                charts: Object.keys(charts)
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `railway_analytics_report_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function showHistoricalData() {
+            alert('Historical data analysis feature will open detailed trends and patterns over time.');
+        }
+        
+        // Chart control functions
+        function changeTimeRange(range) {
+            document.querySelectorAll('.chart-controls .btn-chart').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            // Update chart with new time range data
+        }
+        
+        function updateDistribution(type) {
+            document.querySelectorAll('.chart-controls .btn-chart').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            // Update distribution chart
+        }
+        
+        function updatePlatforms(view) {
+            document.querySelectorAll('.chart-controls .btn-chart').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            // Update platform chart
+        }
+        
+        function updateTraffic(period) {
+            document.querySelectorAll('.chart-controls .btn-chart').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            // Update traffic chart
+        }
+        
+        // Individual refresh functions
+        async function refreshTrainData() {
+            await updateTrainTable();
+        }
+        
+        async function refreshConflictData() {
+            await updateConflictTable();
+        }
+        
+        async function refreshPlatformData() {
+            await updatePlatformTable();
+        }
+        
+        async function refreshMLPredictions() {
+            await updateMLPredictionsTable();
+        }
+        
+        function resolveConflict(conflictType) {
+            alert(`Initiating resolution protocol for ${conflictType}. Emergency response team will be notified.`);
+        }
+        
+        function updateLastUpdateTime() {
+            document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('kpiModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

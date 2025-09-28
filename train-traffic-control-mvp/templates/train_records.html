@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Records - RailNiyantra</title>
+    
+    <!-- External Libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #00a6b8;
+            --primary-dark: #008a99;
+            --primary-light: #00c5d9;
+            --secondary: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .datetime-display {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .weather-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f1f5f9;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f1f5f9;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .admin-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            background: #1e293b;
+            padding: 0;
+            display: flex;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            background: rgba(0, 166, 184, 0.1);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .search-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            width: 300px;
+            font-size: 0.875rem;
+        }
+
+        .filter-dropdown {
+            position: relative;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            min-width: 150px;
+        }
+
+        .filter-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            min-width: 150px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 10;
+        }
+
+        .filter-menu.show {
+            display: block;
+        }
+
+        .filter-option {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .filter-option:hover {
+            background: #f1f5f9;
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: #f8fafc;
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .train-id {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.running {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .status-badge.delayed {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-badge.on-time {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .priority-1 {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .priority-2 {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .page-btn {
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-train"></i>
+                </div>
+                <div>
+                    <div class="logo-text">RailNiyantra</div>
+                    <div class="logo-subtitle">AI Powered Train Traffic Control</div>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="datetime-display">
+                    <span><i class="far fa-clock"></i> <span id="current-datetime">Sat, 20 Sept, 2025 09:06:17 am</span></span>
+                </div>
+                <div class="weather-info">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>29°C, Partly Cloudy</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="admin-info">
+                    <span>System Administrator</span>
+                    <div class="admin-avatar">SA</div>
+                </div>
+                <button style="padding: 0.5rem 1rem; background: transparent; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+        <a href="/" class="nav-tab">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/train-records" class="nav-tab active">
+            <i class="fas fa-train"></i>
+            <span>Train Records</span>
+        </a>
+        <a href="/section-control" class="nav-tab">
+            <i class="fas fa-route"></i>
+            <span>Section Control</span>
+        </a>
+        <a href="/ai-engine" class="nav-tab">
+            <i class="fas fa-brain"></i>
+            <span>AI Engine</span>
+        </a>
+        <a href="/analytics" class="nav-tab">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics</span>
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Train Records (20+ Trains)</h1>
+            <div class="search-section">
+                <input type="text" class="search-box" placeholder="Search trains..." id="searchInput" onkeyup="filterTrains()">
+                <div class="filter-dropdown">
+                    <button class="filter-btn" onclick="toggleFilter()">
+                        All Trains <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="filter-menu" id="filterMenu">
+                        <div class="filter-option" onclick="setFilter('all')">All Trains</div>
+                        <div class="filter-option" onclick="setFilter('local')">Local</div>
+                        <div class="filter-option" onclick="setFilter('express')">Express</div>
+                        <div class="filter-option" onclick="setFilter('fast')">Fast</div>
+                        <div class="filter-option" onclick="setFilter('freight')">Freight</div>
+                        <div class="filter-option" onclick="setFilter('on-time')">On Time</div>
+                        <div class="filter-option" onclick="setFilter('delayed')">Delayed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table" id="trainTable">
+                <thead>
+                    <tr>
+                        <th>Train ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Route</th>
+                        <th>Current Section</th>
+                        <th>Status</th>
+                        <th>Delay</th>
+                        <th>Speed</th>
+                        <th>Priority</th>
+                        <th>Platform</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="trainTableBody">
+                    <!-- Train data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="page-btn" onclick="changePage(-1)">Previous</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn" onclick="changePage(1)">Next</button>
+        </div>
+    </main>
+
+    <script>
+        // Train data
+        const trainData = [
+            {id: 'K01', name: 'Kalyan Local', type: 'Local', route: 'CST - Kalyan', section: 'Dadar-Kurla', status: 'DELAYED', delay: '+2 minutes', speed: '52 km/h', priority: '2', platform: '3'},
+            {id: 'K02', name: 'Kalyan Express', type: 'Express', route: 'CST - Kalyan', section: 'Kurla-Ghatkopar', status: 'RUNNING', delay: '+2 minutes', speed: '72 km/h', priority: '1', platform: '-'},
+            {id: 'V01', name: 'Virar Local', type: 'Local', route: 'Churchgate - Virar', section: 'Andheri-Borivali', status: 'DELAYED', delay: '+7 minutes', speed: '59 km/h', priority: '2', platform: '3'},
+            {id: 'V02', name: 'Virar Fast', type: 'Fast', route: 'Churchgate - Virar', section: 'Bandra-Andheri', status: 'ON TIME', delay: '+11 minutes', speed: '79 km/h', priority: '1', platform: '4'},
+            {id: 'C01', name: 'CST Bound Local', type: 'Local', route: 'Kalyan - CST', section: 'Thane-Mulund', status: 'ON TIME', delay: '+6 minutes', speed: '38 km/h', priority: '2', platform: '6'},
+            {id: 'C02', name: 'CST Express', type: 'Express', route: 'Thane - CST', section: 'Mulund-Bhandup', status: 'DELAYED', delay: '+6 minutes', speed: '68 km/h', priority: '1', platform: '7'},
+            {id: 'H01', name: 'Panvel Local', type: 'Local', route: 'CST - Panvel', section: 'Kurla-Ghatkopar', status: 'DELAYED', delay: '+5 minutes', speed: '73 km/h', priority: '2', platform: '2'},
+            {id: 'B01', name: 'Borivali Fast', type: 'Fast', route: 'Churchgate - Borivali', section: 'Marine Lines-Charni', status: 'ON TIME', delay: '0 minutes', speed: '82 km/h', priority: '1', platform: '1'},
+            {id: 'T01', name: 'Thane Local', type: 'Local', route: 'CST - Thane', section: 'Dadar-Kurla', status: 'RUNNING', delay: '+3 minutes', speed: '65 km/h', priority: '2', platform: '5'},
+            {id: 'A01', name: 'Andheri Local', type: 'Local', route: 'Churchgate - Andheri', section: 'Bandra-Khar', status: 'ON TIME', delay: '0 minutes', speed: '71 km/h', priority: '2', platform: '2'},
+            {id: 'FR01', name: 'Freight Special', type: 'Freight', route: 'Mumbai - Delhi', section: 'Kalyan-Kasara', status: 'RUNNING', delay: '+15 minutes', speed: '45 km/h', priority: '3', platform: '-'},
+            {id: 'K03', name: 'Karjat Express', type: 'Express', route: 'CST - Karjat', section: 'Thane-Kalyan', status: 'DELAYED', delay: '+8 minutes', speed: '76 km/h', priority: '1', platform: '4'},
+            {id: 'B02', name: 'Bandra Local', type: 'Local', route: 'Churchgate - Bandra', section: 'Grant Road-Mumbai Central', status: 'ON TIME', delay: '0 minutes', speed: '55 km/h', priority: '2', platform: '1'},
+            {id: 'D01', name: 'Dahanu Road', type: 'Fast', route: 'Churchgate - Dahanu', section: 'Virar-Vaitarna', status: 'RUNNING', delay: '+4 minutes', speed: '88 km/h', priority: '1', platform: '-'},
+            {id: 'G01', name: 'Goregaon Local', type: 'Local', route: 'Churchgate - Goregaon', section: 'Santacruz-Vile Parle', status: 'DELAYED', delay: '+9 minutes', speed: '48 km/h', priority: '2', platform: '3'},
+            {id: 'N01', name: 'Neral Local', type: 'Local', route: 'CST - Neral', section: 'Karjat-Neral', status: 'ON TIME', delay: '0 minutes', speed: '62 km/h', priority: '2', platform: '6'},
+            {id: 'K04', name: 'Kasara Express', type: 'Express', route: 'CST - Kasara', section: 'Kalyan-Asangaon', status: 'RUNNING', delay: '+5 minutes', speed: '81 km/h', priority: '1', platform: '-'},
+            {id: 'M01', name: 'Malad Local', type: 'Local', route: 'Churchgate - Malad', section: 'Jogeshwari-Goregaon', status: 'DELAYED', delay: '+6 minutes', speed: '57 km/h', priority: '2', platform: '2'},
+            {id: 'FR02', name: 'Container Freight', type: 'Freight', route: 'JNPT - Delhi', section: 'Panvel-Kalyan', status: 'RUNNING', delay: '+20 minutes', speed: '40 km/h', priority: '3', platform: '-'},
+            {id: 'V03', name: 'Vasai Road Fast', type: 'Fast', route: 'Churchgate - Vasai', section: 'Borivali-Dahisar', status: 'ON TIME', delay: '0 minutes', speed: '85 km/h', priority: '1', platform: '5'}
+        ];
+
+        // Populate table
+        function populateTable(data = trainData) {
+            const tbody = document.getElementById('trainTableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(train => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="train-id">${train.id}</td>
+                    <td>${train.name}</td>
+                    <td>${train.type}</td>
+                    <td>${train.route}</td>
+                    <td>${train.section}</td>
+                    <td><span class="status-badge ${train.status.toLowerCase().replace(' ', '-')}">${train.status}</span></td>
+                    <td>${train.delay}</td>
+                    <td>${train.speed}</td>
+                    <td><span class="priority-badge priority-${train.priority}">Priority ${train.priority}</span></td>
+                    <td>Platform ${train.platform}</td>
+                    <td>
+                        <button class="action-btn" onclick="viewTrainDetails('${train.id}')">View Details</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter functionality
+        function toggleFilter() {
+            document.getElementById('filterMenu').classList.toggle('show');
+        }
+
+        function setFilter(type) {
+            const filterBtn = document.querySelector('.filter-btn');
+            let filteredData = trainData;
+            
+            switch(type) {
+                case 'local':
+                    filteredData = trainData.filter(t => t.type === 'Local');
+                    filterBtn.innerHTML = 'Local <i class="fas fa-chevron-down"></i>';
+                    break;
+                case 'express':
+                    filteredData = trainData.filter(t => t.type === 'Express');
+                    filterBtn.innerHTML = 'Express <i class="fas fa-chevron-down"></i>';
+                    break;
+                case 'fast':
+                    filteredData = trainData.filter(t => t.type === 'Fast');
+                    filterBtn.innerHTML = 'Fast <i class="fas fa-chevron-down"></i>';
+                    break;
+                case 'freight':
+                    filteredData = trainData.filter(t => t.type === 'Freight');
+                    filterBtn.innerHTML = 'Freight <i class="fas fa-chevron-down"></i>';
+                    break;
+                case 'on-time':
+                    filteredData = trainData.filter(t => t.status === 'ON TIME');
+                    filterBtn.innerHTML = 'On Time <i class="fas fa-chevron-down"></i>';
+                    break;
+                case 'delayed':
+                    filteredData = trainData.filter(t => t.status === 'DELAYED');
+                    filterBtn.innerHTML = 'Delayed <i class="fas fa-chevron-down"></i>';
+                    break;
+                default:
+                    filterBtn.innerHTML = 'All Trains <i class="fas fa-chevron-down"></i>';
+            }
+            
+            populateTable(filteredData);
+            document.getElementById('filterMenu').classList.remove('show');
+        }
+
+        // Search functionality
+        function filterTrains() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = trainData.filter(train => 
+                train.id.toLowerCase().includes(searchTerm) ||
+                train.name.toLowerCase().includes(searchTerm) ||
+                train.type.toLowerCase().includes(searchTerm) ||
+                train.route.toLowerCase().includes(searchTerm)
+            );
+            populateTable(filteredData);
+        }
+
+        function viewTrainDetails(trainId) {
+            alert(`Viewing details for train ${trainId}`);
+        }
+
+        // Update datetime
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('current-datetime').textContent = now.toLocaleString('en-US', options);
+        }
+
+        // Initialize
+        window.onload = () => {
+            populateTable();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        };
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.filter-btn')) {
+                const dropdown = document.getElementById('filterMenu');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

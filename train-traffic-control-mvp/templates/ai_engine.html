@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Engine - RailNiyantra</title>
+    
+    <!-- External Libraries -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary: #00a6b8;
+            --primary-dark: #008a99;
+            --primary-light: #00c5d9;
+            --secondary: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            background: #1e293b;
+            padding: 0;
+            display: flex;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            background: rgba(0, 166, 184, 0.1);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1920px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Critical Actions */
+        .action-item {
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--danger);
+        }
+
+        .high-badge {
+            background: var(--danger);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .action-location {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-description {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-time {
+            color: var(--danger);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        /* AI Recommendations */
+        .recommendation-item {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .recommendation-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .confidence-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .recommendation-description {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+
+        .recommendation-analysis {
+            font-size: 0.813rem;
+            color: #64748b;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .impact-box {
+            background: white;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .impact-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .impact-description {
+            font-size: 0.813rem;
+            color: #64748b;
+        }
+
+        /* Optimization Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .result-label {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .result-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .result-value.negative {
+            color: var(--danger);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        /* Refresh Button */
+        .refresh-btn {
+            padding: 0.25rem 0.75rem;
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-train"></i>
+                </div>
+                <div>
+                    <div class="logo-text">RailNiyantra</div>
+                    <div class="logo-subtitle">AI Powered Train Traffic Control</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 2rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span><i class="far fa-clock"></i> <span id="current-datetime">Sat, 20 Sept, 2025 09:06:17 am</span></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #f1f5f9; border-radius: 20px;">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>29°C, Partly Cloudy</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #f1f5f9; border-radius: 20px;">
+                    <span>System Administrator</span>
+                    <div style="width: 28px; height: 28px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem;">SA</div>
+                </div>
+                <button style="padding: 0.5rem 1rem; background: transparent; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+        <a href="/" class="nav-tab">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="/train-records" class="nav-tab">
+            <i class="fas fa-train"></i>
+            <span>Train Records</span>
+        </a>
+        <a href="/section-control" class="nav-tab">
+            <i class="fas fa-route"></i>
+            <span>Section Control</span>
+        </a>
+        <a href="/ai-engine" class="nav-tab active">
+            <i class="fas fa-brain"></i>
+            <span>AI Engine</span>
+        </a>
+        <a href="/analytics" class="nav-tab">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics</span>
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Trains Active</div>
+                <div class="stat-value">6</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Conflicts</div>
+                <div class="stat-value" style="color: var(--warning);">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">AI Accuracy</div>
+                <div class="stat-value">91.5%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Punctuality</div>
+                <div class="stat-value">78.5%</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Critical Actions Required -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Critical Actions Required</h2>
+                    <button class="refresh-btn" onclick="refreshActions()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="action-item">
+                    <div class="action-header">
+                        <h3 class="action-title">Junction Conflict</h3>
+                        <span class="high-badge">High</span>
+                    </div>
+                    <div class="action-location">Mathura Junction</div>
+                    <div class="action-description">Rajdhani Express and Freight train approaching same junction</div>
+                    <div class="action-time">Time to conflict: 12 minutes</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="resolveConflict()">Resolve Conflict</button>
+                        <button class="btn btn-secondary" onclick="viewDetails()">View Details</button>
+                    </div>
+                </div>
+
+                <div class="action-item">
+                    <div class="action-header">
+                        <h3 class="action-title">Platform Congestion</h3>
+                        <span class="high-badge" style="background: var(--warning);">Medium</span>
+                    </div>
+                    <div class="action-location">Kurla Station</div>
+                    <div class="action-description">Platform 3 reaching maximum capacity</div>
+                    <div class="action-time">Expected clearance: 18 minutes</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="optimizePlatform()">Optimize Platform</button>
+                        <button class="btn btn-secondary" onclick="viewDetails()">View Details</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Optimization Results -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">AI Optimization Results</h2>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-item">
+                        <span class="result-label">Throughput Improvement</span>
+                        <span class="result-value">+18.6%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Delay Reduction</span>
+                        <span class="result-value negative">-29.3%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Energy Savings</span>
+                        <span class="result-value">+12.5%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Conflicts Resolved</span>
+                        <span class="result-value" style="color: var(--info);">12</span>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="optimizationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h2 class="card-title">AI Recommendations</h2>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-header">
+                    <h3 class="recommendation-title">Precedence Optimization</h3>
+                    <span class="confidence-badge">94% confidence</span>
+                </div>
+                <div class="recommendation-description">
+                    Optimize train precedence at Mathura Junction to minimize total delay
+                </div>
+                <div class="recommendation-analysis">
+                    Analysis shows giving precedence to 12302 reduces overall passenger-minutes lost
+                </div>
+                <div class="impact-box">
+                    <div class="impact-label">Expected Impact:</div>
+                    <div class="impact-description">
+                        Reduce total delay by 15 minutes, improve punctuality by 8%
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="autoImplement()">
+                        <i class="fas fa-magic"></i> Auto-Implement
+                    </button>
+                    <button class="btn btn-secondary" onclick="analyzeImpact()">
+                        <i class="fas fa-chart-line"></i> Analyze Impact
+                    </button>
+                    <button class="btn btn-secondary" onclick="override()">
+                        <i class="fas fa-times"></i> Override
+                    </button>
+                </div>
+            </div>
+
+            <div class="recommendation-item">
+                <div class="recommendation-header">
+                    <h3 class="recommendation-title">Route Diversion</h3>
+                    <span class="confidence-badge">87% confidence</span>
+                </div>
+                <div class="recommendation-description">
+                    Divert freight train FR01 to alternate route via bypass line
+                </div>
+                <div class="recommendation-analysis">
+                    Bypass line utilization at 23%, main line congestion at 87%
+                </div>
+                <div class="impact-box">
+                    <div class="impact-label">Expected Impact:</div>
+                    <div class="impact-description">
+                        Reduce section utilization by 16%, prevent 2 potential conflicts
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="autoImplement()">
+                        <i class="fas fa-magic"></i> Auto-Implement
+                    </button>
+                    <button class="btn btn-secondary" onclick="analyzeImpact()">
+                        <i class="fas fa-chart-line"></i> Analyze Impact
+                    </button>
+                    <button class="btn btn-secondary" onclick="override()">
+                        <i class="fas fa-times"></i> Override
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- What-If Scenario Testing -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-flask"></i>
+                    What-If Scenario Testing
+                </h2>
+                <button class="refresh-btn" onclick="clearScenario()">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+            </div>
+            
+            <div class="main-grid">
+                <!-- Scenario Configuration -->
+                <div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-primary);">Scenario Configuration</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem;">Scenario Type</label>
+                            <select id="scenarioType" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;" onchange="updateScenarioOptions()">
+                                <option value="delay">Train Delay</option>
+                                <option value="blockage">Section Blockage</option>
+                                <option value="signal">Signal Failure</option>
+                                <option value="weather">Weather Impact</option>
+                                <option value="breakdown">Train Breakdown</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem;">Affected Element</label>
+                            <select id="affectedElement" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;">
+                                <option value="K02">K02 - Kalyan Express</option>
+                                <option value="V01">V01 - Virar Local</option>
+                                <option value="V02">V02 - Virar Fast</option>
+                                <option value="FR01">FR01 - Freight Special</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem;">Impact Severity</label>
+                            <select id="severity" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;">
+                                <option value="low">Low (5-10 min delay)</option>
+                                <option value="medium">Medium (10-20 min delay)</option>
+                                <option value="high">High (20-45 min delay)</option>
+                                <option value="critical">Critical (45+ min delay)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem;">Duration (minutes)</label>
+                            <input type="number" id="duration" value="15" min="5" max="120" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.875rem;">
+                        </div>
+                        
+                        <button onclick="runScenarioSimulation()" style="width: 100%; padding: 0.875rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">
+                            <i class="fas fa-play"></i>
+                            Run Simulation
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Simulation Results -->
+                <div>
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-primary);">Predicted Impact</h3>
+                    
+                    <div id="simulationResults" style="background: #f8fafc; border-radius: 8px; padding: 1.5rem; border: 1px solid #e2e8f0; color: #64748b; text-align: center;">
+                        <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p>Configure scenario parameters and click "Run Simulation" to see predicted impacts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('optimizationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Throughput', 'Avg Delay', 'Energy Efficiency', 'Conflicts'],
+                    datasets: [
+                        {
+                            label: 'Before',
+                            data: [156, 8.5, 73, 28],
+                            backgroundColor: 'rgba(239, 68, 68, 0.6)'
+                        },
+                        {
+                            label: 'After',
+                            data: [185, 6, 82, 12],
+                            backgroundColor: 'rgba(0, 166, 184, 0.6)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Button Functions
+        function refreshActions() {
+            console.log('Refreshing critical actions...');
+            // Add animation or fetch new data
+        }
+
+        function resolveConflict() {
+            alert('Implementing AI-optimized resolution for junction conflict...');
+        }
+
+        function viewDetails() {
+            alert('Opening detailed view...');
+        }
+
+        function optimizePlatform() {
+            alert('Optimizing platform allocation...');
+        }
+
+        function autoImplement() {
+            if(confirm('Auto-implement this AI recommendation?')) {
+                alert('Recommendation implemented successfully!');
+            }
+        }
+
+        function analyzeImpact() {
+            alert('Opening impact analysis dashboard...');
+        }
+
+        function override() {
+            const reason = prompt('Please provide reason for override:');
+            if(reason) {
+                alert('Recommendation overridden. Reason logged.');
+            }
+        }
+
+        // What-If Scenario Functions
+        function updateScenarioOptions() {
+            const scenarioType = document.getElementById('scenarioType').value;
+            const affectedElement = document.getElementById('affectedElement');
+            
+            // Clear previous options
+            affectedElement.innerHTML = '';
+            
+            if (scenarioType === 'delay' || scenarioType === 'breakdown') {
+                // Train options
+                affectedElement.innerHTML = `
+                    <option value="K02">K02 - Kalyan Express</option>
+                    <option value="V01">V01 - Virar Local</option>
+                    <option value="V02">V02 - Virar Fast</option>
+                    <option value="FR01">FR01 - Freight Special</option>
+                `;
+            } else if (scenarioType === 'blockage' || scenarioType === 'signal') {
+                // Section options
+                affectedElement.innerHTML = `
+                    <option value="SEC01">SEC01 - Dadar-Kurla</option>
+                    <option value="SEC02">SEC02 - Kurla-Ghatkopar</option>
+                    <option value="SEC03">SEC03 - Andheri-Borivali</option>
+                    <option value="SEC04">SEC04 - Bandra-Andheri</option>
+                `;
+            } else if (scenarioType === 'weather') {
+                // Area options
+                affectedElement.innerHTML = `
+                    <option value="CENTRAL">Central Line</option>
+                    <option value="WESTERN">Western Line</option>
+                    <option value="HARBOUR">Harbour Line</option>
+                    <option value="ALL">All Lines</option>
+                `;
+            }
+        }
+
+        function runScenarioSimulation() {
+            const scenarioType = document.getElementById('scenarioType').value;
+            const affectedElement = document.getElementById('affectedElement').value;
+            const severity = document.getElementById('severity').value;
+            const duration = document.getElementById('duration').value;
+            
+            // Show loading state
+            const resultsDiv = document.getElementById('simulationResults');
+            resultsDiv.innerHTML = `
+                <div style="text-align: center; color: #64748b;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>Running simulation...</p>
+                </div>
+            `;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                const results = generateScenarioResults(scenarioType, affectedElement, severity, duration);
+                displayScenarioResults(results);
+            }, 2000);
+        }
+
+        function generateScenarioResults(type, element, severity, duration) {
+            // Simulate AI-generated results based on scenario parameters
+            const severityMultipliers = {
+                low: { delay: 1, affected: 2, cost: 1 },
+                medium: { delay: 1.5, affected: 3, cost: 2.5 },
+                high: { delay: 2.5, affected: 5, cost: 4 },
+                critical: { delay: 4, affected: 8, cost: 7 }
+            };
+            
+            const multiplier = severityMultipliers[severity];
+            const baseDuration = parseInt(duration);
+            
+            return {
+                type: type,
+                element: element,
+                severity: severity,
+                duration: baseDuration,
+                totalDelay: Math.round(baseDuration * multiplier.delay),
+                affectedTrains: Math.round(4 * multiplier.affected),
+                passengerImpact: Math.round(1200 * multiplier.affected),
+                estimatedCost: Math.round(50000 * multiplier.cost),
+                recommendations: getRecommendations(type, severity)
+            };
+        }
+
+        function getRecommendations(type, severity) {
+            const recommendations = {
+                delay: [
+                    'Reroute affected passengers to alternative services',
+                    'Adjust following train schedules',
+                    'Activate contingency timetable'
+                ],
+                blockage: [
+                    'Divert trains to alternate routes',
+                    'Deploy shuttle services for affected sections',
+                    'Coordinate with maintenance teams for rapid clearance'
+                ],
+                signal: [
+                    'Switch to manual block operation',
+                    'Reduce train speeds in affected section',
+                    'Deploy technical team for signal repair'
+                ],
+                weather: [
+                    'Implement weather-specific speed restrictions',
+                    'Increase train monitoring frequency',
+                    'Prepare emergency response teams'
+                ],
+                breakdown: [
+                    'Deploy rescue locomotive immediately',
+                    'Arrange passenger transfer if needed',
+                    'Clear tracks for following services'
+                ]
+            };
+            
+            return recommendations[type] || ['Monitor situation closely', 'Implement standard procedures'];
+        }
+
+        function displayScenarioResults(results) {
+            const resultsDiv = document.getElementById('simulationResults');
+            
+            resultsDiv.innerHTML = `
+                <div style="text-align: left;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">${results.totalDelay} min</div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Total Delay</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">${results.affectedTrains}</div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Affected Trains</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--info);">${results.passengerImpact.toLocaleString()}</div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Passenger Impact</div>
+                        </div>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);">₹${results.estimatedCost.toLocaleString()}</div>
+                            <div style="font-size: 0.875rem; color: #64748b;">Est. Cost Impact</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff5f5; border-left: 4px solid var(--danger); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <h4 style="color: var(--danger); margin-bottom: 0.5rem; font-size: 0.875rem;">AI Recommendations:</h4>
+                        <ul style="margin: 0; padding-left: 1rem; color: #64748b; font-size: 0.875rem;">
+                            ${results.recommendations.map(rec => `<li style="margin-bottom: 0.25rem;">${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="exportScenarioReport()" style="flex: 1; padding: 0.5rem 1rem; background: var(--secondary); color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                        <button onclick="implementRecommendations()" style="flex: 1; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">
+                            <i class="fas fa-check"></i> Apply Recommendations
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearScenario() {
+            document.getElementById('scenarioType').value = 'delay';
+            document.getElementById('severity').value = 'low';
+            document.getElementById('duration').value = '15';
+            updateScenarioOptions();
+            
+            const resultsDiv = document.getElementById('simulationResults');
+            resultsDiv.innerHTML = `
+                <i class="fas fa-chart-line" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>Configure scenario parameters and click "Run Simulation" to see predicted impacts</p>
+            `;
+            resultsDiv.style.textAlign = 'center';
+        }
+
+        function exportScenarioReport() {
+            alert('Scenario report would be exported as PDF. Feature not implemented in demo.');
+        }
+
+        function implementRecommendations() {
+            if(confirm('Apply AI recommendations to the current system?')) {
+                alert('Recommendations applied successfully!');
+            }
+        }
+
+        // Update datetime
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('current-datetime').textContent = now.toLocaleString('en-US', options);
+        }
+
+        // Initialize
+        window.onload = () => {
+            initChart();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        };
+    </script>
+</body>
+</html>
