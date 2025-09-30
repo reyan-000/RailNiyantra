@@ -502,20 +502,10 @@ def legacy_optimize():
     """Legacy endpoint redirected to dynamic optimization"""
     return run_dynamic_optimization()
 
-if __name__ == '__main__':
-    print("🚀 Starting Enhanced Live Railway Traffic Control System")
-    print("=" * 60)
-    print("✅ Live Database: Charbagh Railway Station with 2500+ train records")
-    print("✅ Dynamic Optimization: AI-enhanced with varying results")
-    print("✅ What-If Scenarios: ML-powered impact prediction")
-    print("✅ Conflict Detection: Advanced ML-based conflict resolution")
-    print("✅ Comprehensive Analytics: 25+ KPIs with real-time updates")
-    print("✅ Schedule Reoptimization: Dynamic real-time adjustments")
-    print("✅ Interactive Features: All critical options clickable")
-    print("=" * 60)
-    print("🌐 Server starting on http://localhost:5000")
-    print("📊 Live updates active - data refreshes every 30 seconds")
-    print("🧠 AI/ML features fully operational")
-    print("=" * 60)
+import os
+
+if __name__ == "__main__":
     
-    app.run(debug=True, port=5000, threaded=True)
+    port = int(os.environ.get("PORT", 10000))
+    
+    app.run(host="0.0.0.0", port=port)
