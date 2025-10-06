@@ -502,10 +502,8 @@ def legacy_optimize():
     """Legacy endpoint redirected to dynamic optimization"""
     return run_dynamic_optimization()
 
-import os
-
 if __name__ == "__main__":
-    
-    port = int(os.environ.get("PORT", 10000))
-    
-    app.run(host="0.0.0.0", port=port)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+
